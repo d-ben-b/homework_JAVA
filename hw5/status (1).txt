@@ -1,0 +1,16 @@
+Player1
+p1	Griffendor
+70	40	30%
+1	1
+learned	Serpensortia	80%
+learned Stupefy	100%
+learned	Impedimenta	40%
+learned	Wingardium Leviosa	100%
+
+Player2
+p2	Griffendor
+20	50	30%	bleeding	1
+1	0
+learned	Serpensortia	100%
+learned	Spectumsempra	70%
+learned	Tarantallegra	100%
