@@ -1,0 +1,137 @@
+#include <stdio.h>
+#include <string.h>
+    static int correct_answer[5][5] ;
+    static int student_answer[5][5] ;
+    static char answer_type[5] = "ABCDE";
+    static char g_cmd;
+    static int flag = 0;
+int main()
+{
+    while(1 > 0)
+    {
+        welcome();
+        if(g_cmd == 'c')
+        {
+            enter_correct_answer();
+        }
+        else if (g_cmd == 'a' &&
+                flag == 1)
+        {
+            enter_student_answer();
+        }
+        else if (g_cmd == 'a' &&
+                flag == 0)
+        {
+            printf("尚未未輸入正確答案！\n");
+            printf("請使用指令：c\n");
+        }
+        else if (g_cmd == 's' &&
+                flag == 1)
+        {
+            grading();
+        }
+        else if (g_cmd == 's' &&
+                flag == 0)
+        {
+            printf("尚未未輸入正確答案！\n");
+            printf("請使用指令：c\n");
+        }
+        else
+        {
+            printf("輸入錯誤！");
+        }
+        char g_cmd = getchar();
+    }
+    return 0;
+}
+
+void enter_correct_answer()
+{
+    printf("請輸入正確的答案：\n");
+    printf("格式為：答案為ACE，請輸入1,0,1,0,1\n");
+    for (int i = 0; i < 5; i++ )
+    {
+    scanf("%d,%d,%d,%d,%d", &correct_answer[i][0], &correct_answer[i][1], &correct_answer[i][2], &correct_answer[i][3], &correct_answer[i][4]);
+    printf("your correct answer is :");
+        for (int j = 0; j < 5; j++ )
+        {
+            if( correct_answer[i][j] == 1 )
+            {
+            printf("%c ", answer_type[j]);
+            }
+        }
+    printf("\n");
+    }
+    printf("\n");
+    flag = 1;
+
+}
+
+void welcome()
+{
+    printf("指令：c 進入輸入正確答案的模式\n");
+    printf("指令：a 進入輸入學生答案的模式\n");
+    printf("指令：s 進入對答案的模式\n");
+    printf("請輸入指令：");
+    scanf("%c", &g_cmd);
+    printf("使用者已輸入指令：%c\n", g_cmd);
+}
+
+void enter_student_answer()
+{
+    printf("請輸入學生的答案：\n");
+    for (int i = 0; i < 5; i++ )
+    {
+    scanf("%d,%d,%d,%d,%d", &student_answer[i][0], &student_answer[i][1], &student_answer[i][2], &student_answer[i][3], &student_answer[i][4]);
+    printf("the student's answer is :");
+        for (int j = 0; j < 5; j++ )
+        {
+            if( student_answer[i][j] == 1 )
+            {
+            printf("%c ", answer_type[j]);
+            }
+        }
+    printf("\n");
+    }
+}
+
+void grading()
+{
+    int grade = 0;
+    int temp_grade = 0;
+    for(int i = 0; i < 5; i++)
+    {
+        printf("第%d題\n", i + 1);
+        printf("學生作答為：");
+        for (int j = 0; j < 5; j++ )
+        {
+            if( student_answer[i][j] == 1 )
+            {
+            printf("%c ", answer_type[j]);
+            }
+        }
+        printf("\n");
+        printf("正確答案為：");
+        for (int j = 0; j < 5; j++ )
+        {
+            if( correct_answer[i][j] == 1 )
+            {
+            printf("%c ", answer_type[j]);
+            }
+        }
+        printf("\n");
+        for (int j = 0; j < 5; j++ )
+        {
+            if (student_answer[i][j] == correct_answer[i][j])
+            {
+                grade += 4;
+                temp_grade += 4;
+            }
+        }
+         printf("學生此題得到%d分\n", temp_grade);
+         printf("\n");
+         temp_grade = 0;
+    }
+    printf("學生得到%d分\n", grade);
+    printf("\n");
+}

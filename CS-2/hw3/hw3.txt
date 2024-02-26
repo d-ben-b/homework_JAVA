@@ -1,0 +1,520 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct classroom/**classroom的structure*/
+{
+    char classname[8];
+    int people;
+    char department[6];
+    int is_rentable;
+    char schedule[3][7];
+};
+
+struct tenant
+{
+    char name[11];
+    char department[6];
+};
+
+void readfile( struct classroom* newclassroom);
+void readpeople(struct tenant* newtenant);
+int countroom();
+int countpeople();
+void show();
+
+static char new_classroom[40] = "new_classroom.txt";
+static char new_people[40] = "new_people.txt";
+static int total_classroom = 20;
+static int total_tenant = 20;
+static char g_cmd[20];
+
+int main()
+{
+    printf("您好，歡迎使用教室租借管理系統\n");
+    printf("請輸入指令已進行相關動作\n指令集如下：\n");
+    total_classroom = countroom();
+    total_tenant = countpeople();
+
+    struct tenant *newtenant = calloc(total_tenant, sizeof(struct tenant));
+    struct classroom *newclassroom = calloc(total_classroom, sizeof(struct classroom));
+    readfile(newclassroom);
+    readpeople(newtenant);
+    show();
+    char temp_char[10];
+    while(1)
+    {
+        printf("請輸入指令：");
+        scanf("%s",g_cmd);
+        char c;
+        if(strstr(g_cmd,"new_classroom") && newclassroom)/*new_classroom***/
+        {
+            int check = 0;
+            scanf("%s",temp_char);/**classname*/
+            int i;
+            for(i = 0;i < total_classroom;i++)
+            {
+                if(0 == strcmp(newclassroom[i].classname,temp_char))
+                {
+                    check = 1;
+                    while ((c = getchar()) != EOF && c != '\n');
+                }
+                else
+                {
+                    printf("");
+                }
+            }
+            if(check == 0)
+            {
+                total_classroom += 1;
+                struct classroom *temp = (struct classroom *)realloc(newclassroom,total_classroom*sizeof(struct classroom));
+                if(temp != NULL)
+                {
+                    newclassroom = temp;
+                }
+                else
+                {
+                    printf("error\n");
+                    exit(1);
+                }
+                strcpy(newclassroom[total_classroom-1].classname,temp_char);
+                scanf("%s",temp_char);
+                newclassroom[total_classroom-1].people = atoi(temp_char);
+                scanf("%s",newclassroom[total_classroom-1].department);
+                scanf("%s",temp_char);
+                newclassroom[total_classroom-1].is_rentable = atoi(temp_char);
+                printf("名稱：%s\n",newclassroom[total_classroom-1].classname);
+                printf("最大容納人數：%d\n",newclassroom[total_classroom-1].people);
+                printf("系所：%s\n",newclassroom[total_classroom-1].department);
+                printf("是否開放外系租借(1為是/0為否)：%d\n",newclassroom[total_classroom-1].is_rentable);
+            }
+            else
+            {
+                printf("重複註冊！\n");
+            }
+
+        }
+        else if(strstr(g_cmd,"new_person"))/*new_person***/
+        {
+            int check = 0;
+            int i;
+            scanf("%s",temp_char);/**person_name*/
+            for(i = 0;i < total_tenant;i++)
+            {
+                if(0 == strcmp(newtenant[i].name,temp_char))
+                {
+                    check = 1;
+                    while ((c = getchar()) != EOF && c != '\n');
+                }
+                else
+                {
+                    printf("");
+                }
+            }
+            if(check == 0)
+            {
+                total_tenant += 1;
+                struct tenant *temp = (struct tenant *)realloc(newtenant,total_tenant* sizeof(struct tenant));
+                if(temp != NULL)
+                {
+                    newtenant = temp;
+                }
+                else
+                {
+                    printf("error\n");
+                    exit(1);
+                }
+                strcpy(newtenant[total_tenant-1].name,temp_char);
+                scanf("%s",newtenant[total_tenant-1].department);
+                printf("名字：%s\n",newtenant[total_tenant-1].name);
+                printf("系所：%s\n",newtenant[total_tenant-1].department);
+            }
+            else
+            {
+                printf("重複註冊！\n");
+            }
+        }
+        else if(strstr(g_cmd,"rent"))/*rent***/
+        {
+            int check_room = 0;
+            int check_name = 0;
+            int i;
+            int j;
+            int a,b;
+            int check = -1;
+            char temp_name[10];
+            scanf("%s",temp_char);/**classname*/
+            scanf("%s",temp_name);/**person_name*/
+            for(i = 0;i < total_classroom;i++)
+            {
+                if(0 == strcmp(newclassroom[i].classname,temp_char))
+                {
+                    check_room = 0;
+                    break;
+                }
+                else
+                {
+                    check_room++;
+                }
+            }
+            for(j = 0;j < total_tenant;j++)
+            {
+                if(0 == strcmp(newtenant[j].name,temp_name))
+                {
+                    check_name = 0;
+                    break;
+                }
+                else
+                {
+                    check_name++;
+                }
+            }
+            if(check_name == 0 && check_room == 0)/**有人,有教室*/
+            {
+                scanf("%s",temp_char);/**人數*/
+                if(newclassroom[i].people >= atoi(temp_char))/**人數OK*/
+                {
+                    if(newclassroom[i].is_rentable == 1)/**都可借*/
+                    {
+                        scanf("%d-%d",&a,&b);/**星期和時間*/
+                        if(newclassroom[i].schedule[b-1][a-1] != 'R')
+                        {
+                            printf("OK！\n");
+                            newclassroom[i].schedule[b-1][a-1] = 'R';
+                        }
+                        else
+                        {
+                            printf("該時段已被租借！\n");
+                            while ((c = getchar()) != EOF && c != '\n');
+                        }
+                    }
+                    else
+                    {
+                        if(0 == strcmp(newclassroom[i].department,newtenant[j].department))/**身分OK*/
+                        {
+                            scanf("%d-%d",&a,&b);/**星期和時間*/
+                            if(newclassroom[i].schedule[b-1][a-1] != 'R')
+                            {
+                                printf("OK！\n");
+                                newclassroom[i].schedule[b-1][a-1] = 'R';
+                                while ((c = getchar()) != EOF && c != '\n');
+                            }
+                            else
+                            {
+                                printf("該時段已被租借！\n");
+                                while ((c = getchar()) != EOF && c != '\n');
+                            }
+                        }
+                        else
+                        {
+                            printf("身分不合！\n");
+                            while ((c = getchar()) != EOF && c != '\n');
+                        }
+                    }
+                }
+                else
+                {
+                    printf("超過教室人數上限！\n");
+                    while ((c = getchar()) != EOF && c != '\n');
+                }
+            }
+            else if(check_room > 0)
+            {
+                printf("查無此教室！\n");
+                while ((c = getchar()) != EOF && c != '\n');
+            }
+            else if(check_name > 0)
+            {
+                printf("此人尚未註冊！\n");
+                while ((c = getchar()) != EOF && c != '\n');
+            }
+            else
+            {
+                printf("error\n");
+                exit(1);
+            }
+
+        }
+        else if(strstr(g_cmd,"recommend"))
+        {
+            int j,i,people,a,b;
+            int check_name = 0;
+            scanf("%s",temp_char);/**person_name*/
+            scanf("%d",&people);
+            scanf("%d-%d",&a,&b);
+            for(j = 0;j < total_tenant;j++)/**找人*/
+            {
+                if(0 == strcmp(newtenant[j].name,temp_char))
+                {
+                    check_name = 0;
+                    break;
+                }
+                else
+                {
+                    check_name++;
+                }
+            }
+            if(check_name == 0)/**有人*/
+            {
+                for(i = 0;i < total_classroom;i++)
+                {
+                    if(newclassroom[i].is_rentable == 1)
+                    {
+                        if(people < newclassroom[i].people)
+                        {
+                            if(newclassroom[i].schedule[b-1][a-1] != 'R')
+                            {
+                                printf("符合條件之教室名稱:\n");
+                                printf("%s\n",newclassroom[i].classname);
+                            }
+                            else
+                            {
+                               printf("");
+                            }
+                        }
+                        else
+                        {
+                           printf("");
+                        }
+                    }
+                    else if(0 == strcmp(newclassroom[i].department,newtenant[j].department))
+                    {
+                        if(people < newclassroom[i].people)
+                        {
+                            if(newclassroom[i].schedule[b-1][a-1] != 'R')
+                            {
+                                printf("符合條件之教室名稱:\n");
+                                printf("%s\n",newclassroom[i].classname);
+                            }
+                            else
+                            {
+                                printf("");
+                            }
+                        }
+                        else
+                        {
+                            printf("");
+                        }
+                    }
+                    else
+                    {
+                        printf("");
+                    }
+                }
+            }
+            else if(check_name > 0)
+            {
+                printf("此人尚未註冊！\n");
+                while ((c = getchar()) != EOF && c != '\n');
+            }
+            else
+            {
+                printf("error\n");
+                exit(1);
+            }
+        }
+        else if(0 == strcmp(g_cmd,"list_classroom"))
+        {
+            int i;
+            for(i = 0;i < total_classroom;i++)
+            {
+                printf("%s:\n",newclassroom[i].classname);
+                printf(" 最大容納人數：%d\n",newclassroom[i].people);
+                printf(" 系所：%s\n",newclassroom[i].department);
+                if(newclassroom[i].is_rentable == 0)
+                {
+                    printf(" 是否開放外系租借：否\n");
+                }
+                else if(newclassroom[i].is_rentable == 1)
+                {
+                     printf(" 是否開放外系租借：是\n");
+                }
+
+            }
+
+        }
+        else if(0 == strcmp(g_cmd,"list_people"))
+        {
+            int i;
+            for(i = 0;i < total_tenant;i++)
+            {
+                printf("%s:\n",newtenant[i].name);
+                printf(" 系所:%s\n",newtenant[i].department);
+            }
+
+        }
+        else if(strstr(g_cmd,"schedule"))
+        {
+            int i,x,y;
+            int check_room = 0;
+            scanf("%s",temp_char);
+            for(i = 0;i < total_classroom;i++)
+            {
+                if(0 == strcmp(newclassroom[i].classname,temp_char))
+                {
+                    check_room = 0;
+                    break;
+                }
+                else
+                {
+                    check_room++;
+                }
+            }
+            for(x = 0;x < 3;x++)/**array清乾淨*/
+            {
+                for(y = 0;y < 7;y++)
+                {
+                    if(newclassroom[i].schedule[x][y] != 'R')
+                    {
+                        newclassroom[i].schedule[x][y] = '\0';
+                    }
+                }
+            }
+
+            if(check_room == 0)
+            {
+                printf("%s\n",newclassroom[i].classname);
+                printf("| Mon. | Tue. | Wed. | Thu. | Fri. | Sat. | Sun. |\n");
+                printf("|  %c   |  %c   |  %c   |  %c   |  %c   |  %c   |  %c   |\n",newclassroom[i].schedule[0][0],newclassroom[i].schedule[0][1],newclassroom[i].schedule[0][2],newclassroom[i].schedule[0][3],newclassroom[i].schedule[0][4],newclassroom[i].schedule[0][5],newclassroom[i].schedule[0][6]);
+                printf("|  %c   |  %c   |  %c   |  %c   |  %c   |  %c   |  %c   |\n",newclassroom[i].schedule[1][0],newclassroom[i].schedule[1][1],newclassroom[i].schedule[1][2],newclassroom[i].schedule[1][3],newclassroom[i].schedule[1][4],newclassroom[i].schedule[1][5],newclassroom[i].schedule[1][6]);
+                printf("|  %c   |  %c   |  %c   |  %c   |  %c   |  %c   |  %c   |\n",newclassroom[i].schedule[2][0],newclassroom[i].schedule[2][1],newclassroom[i].schedule[2][2],newclassroom[i].schedule[2][3],newclassroom[i].schedule[2][4],newclassroom[i].schedule[2][5],newclassroom[i].schedule[2][6]);
+
+            }
+            else if(check_room > 0)
+            {
+                printf("查無此教室！\n");
+                while ((c = getchar()) != EOF && c != '\n');
+            }
+            else
+            {
+                printf("error\n");
+                exit(1);
+            }
+        }
+        else if(0 == strcmp(g_cmd,"quit"))
+        {
+            printf("感謝使用！\n");
+            exit(0);
+
+        }
+        else if(0 == strcmp(g_cmd,"help"))
+        {
+            show();
+        }
+        else
+        {
+            printf("指令有誤\n");
+            while ((c = getchar()) != EOF && c != '\n');
+        }
+    }
+    return 0;
+}
+
+void readfile(struct classroom* newclassroom)
+{
+    int count = 0;
+    FILE *file = fopen(new_classroom,"r");
+    if (file == NULL)
+    {
+        printf("Error: file pointer is null.");
+        exit(1);
+    }
+    while(!feof(file))
+    {
+        if(count < total_classroom)
+        {
+            fscanf(file,"%s %d %s %d",&newclassroom[count].classname,&newclassroom[count].people,&newclassroom[count].department,&newclassroom[count].is_rentable);
+            count++;
+        }
+
+    }
+    fclose(file);
+}
+
+void readpeople(struct tenant* newtenant)
+{
+    int count = 0;
+    FILE *file = fopen(new_people,"r");
+    if (file == NULL)
+    {
+        printf("Error: file pointer is null.\n");
+        exit(1);
+    }
+    while(!feof(file))
+    {
+        if(count < total_tenant)
+        {
+            fscanf(file,"%s %s",newtenant[count].name,newtenant[count].department);
+            count++;
+        }
+        else
+        {
+            printf("fail\n");
+            break;
+        }
+
+    }
+    fclose(file);
+}
+
+void show()
+{
+    printf("基本指令集：\n");
+    printf("new_classroom\n");
+    printf("輸入後，註冊新教室 範例：new_classroom 92177 60 EE 1\n\n");
+    printf("new_person\n");
+    printf("輸入後，註冊新租借者 範例：new_person Harry EE\n\n");
+    printf("rent\n");
+    printf("輸入後，申請租借 範例：rent 92177 Harry 40 1-3\n\n");
+    printf("recommend\n");
+    printf("輸入後，提供推薦的教室 範例：recommend Harry 40 1-3\n\n");
+    printf("list_classroom\n");
+    printf("輸入後，顯示所有教室以及對應資訊\n\n");
+    printf("list_people\n");
+    printf("輸入後，顯示所有租借者以及對應資訊\n\n");
+    printf("schedule\n");
+    printf("輸入後，顯示指定教室的租借時程表 範例：schedule 92177\n\n");
+    printf("quit\n");
+    printf("輸入後，離開程式\n\n");
+    printf("help\n");
+    printf("輸入後，再次顯示此指令集介紹\n\n");
+}
+
+int countroom()/**算出初始的教室數目*/
+{
+    char temp[50];
+    int count = 0;
+    FILE *file = fopen(new_classroom,"r");
+    if (file == NULL)
+    {
+        printf("Error: file pointer is null.\n");
+        exit(1);
+    }
+    while(!feof(file))
+    {
+        fgets(temp,50,file);
+        count++;
+
+    }
+    return count;
+}
+
+int countpeople()/**算出初始的人數目*/
+{
+    char temp[50];
+    int count = 0;
+    FILE *file = fopen(new_people,"r");
+    if (file == NULL)
+    {
+        printf("Error: file pointer is null.\n");
+        exit(1);
+    }
+    while(!feof(file))
+    {
+        fgets(temp,50,file);
+        count++;
+
+    }
+    return count;
+}
+
